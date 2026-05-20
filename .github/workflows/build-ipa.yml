@@ -46,6 +46,20 @@ jobs:
           set -o pipefail
           mkdir -p build_logs
 
+          # ── Fix: 'Multiple commands produce Info.plist' ─────────────────
+          # The project sets GENERATE_INFOPLIST_FILE=YES (auto-synthesizes
+          # Info.plist from INFOPLIST_KEY_* settings) AND uses Xcode 16's
+          # PBXFileSystemSynchronizedRootGroup, which auto-copies every file
+          # under ARKitPoseStreamer/ as a resource — including the on-disk
+          # Info.plist.  That causes two build commands to write the same
+          # output.  Solution: remove the on-disk Info.plist in CI and let
+          # Xcode synthesize it, supplying the few keys not already covered
+          # by INFOPLIST_KEY_* in pbxproj.
+          if [ -f ARKitPoseStreamer/Info.plist ]; then
+            echo "Removing on-disk Info.plist (Xcode will auto-generate)"
+            rm ARKitPoseStreamer/Info.plist
+          fi
+
           COMMON=(
             -project ARKitPoseStreamer.xcodeproj
             -configuration Release
@@ -59,6 +73,8 @@ jobs:
             DEVELOPMENT_TEAM=""
             PROVISIONING_PROFILE_SPECIFIER=""
             ONLY_ACTIVE_ARCH=NO
+            GENERATE_INFOPLIST_FILE=YES
+            INFOPLIST_KEY_UIRequiredDeviceCapabilities=arkit
           )
 
           SHARED_SCHEMES=$(xcodebuild -list -project ARKitPoseStreamer.xcodeproj \

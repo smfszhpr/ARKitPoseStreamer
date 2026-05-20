@@ -11,11 +11,21 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    # macos-15 ships Xcode 16, required to parse this project (pbxproj
+    # objectVersion = 77 + PBXFileSystemSynchronizedRootGroup are Xcode 16+).
+    runs-on: macos-15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        run: |
+          ls /Applications | grep -i Xcode || true
+          # Pick the highest-versioned Xcode app available on the runner.
+          LATEST=$(ls /Applications | grep -E '^Xcode(_[0-9.]+)?\.app$' | sort -V | tail -n 1)
+          echo "Selecting: $LATEST"
+          sudo xcode-select -s "/Applications/$LATEST/Contents/Developer"
 
       - name: Diagnostics — Xcode / SDK / schemes / targets
         run: |

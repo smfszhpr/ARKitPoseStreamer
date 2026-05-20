@@ -43,7 +43,8 @@ jobs:
 
       - name: Build .app (unsigned)
         run: |
-          set -euo pipefail
+          set -o pipefail
+          mkdir -p build_logs
 
           COMMON=(
             -project ARKitPoseStreamer.xcodeproj
@@ -60,7 +61,6 @@ jobs:
             ONLY_ACTIVE_ARCH=NO
           )
 
-          # Prefer -scheme when a shared scheme is exposed; otherwise fall back to -target.
           SHARED_SCHEMES=$(xcodebuild -list -project ARKitPoseStreamer.xcodeproj \
                             | awk '/Schemes:/{flag=1;next} /^$/{flag=0} flag' \
                             | sed 's/^[[:space:]]*//')
@@ -68,11 +68,20 @@ jobs:
 
           if echo "$SHARED_SCHEMES" | grep -qx 'ARKitPoseStreamer'; then
             echo ">>> building with -scheme ARKitPoseStreamer"
-            xcodebuild "${COMMON[@]}" -scheme ARKitPoseStreamer build
+            xcodebuild "${COMMON[@]}" -scheme ARKitPoseStreamer build 2>&1 | tee build_logs/xcodebuild.log
           else
             echo ">>> no shared scheme found, falling back to -target ARKitPoseStreamer"
-            xcodebuild "${COMMON[@]}" -target ARKitPoseStreamer build
+            xcodebuild "${COMMON[@]}" -target ARKitPoseStreamer build 2>&1 | tee build_logs/xcodebuild.log
           fi
+
+      - name: Upload build log (always, even on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: build_logs/
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Package into IPA
         run: |

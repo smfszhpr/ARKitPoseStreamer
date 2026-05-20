@@ -1,9 +1,5 @@
-//
-//  ARKitPoseStreamerApp.swift
-//  ARKitPoseStreamer
-//
-//  Created by chosenone on 2026/4/8.
-//
+// ARKitPoseStreamerApp.swift
+// 入口文件 — SwiftUI App
 
 import SwiftUI
 

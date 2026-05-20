@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		666A593A2F8621B200DE989E /* RealityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 666A59392F8621B200DE989E /* RealityKit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		666A591D2F86202C00DE989E /* ARKitPoseStreamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARKitPoseStreamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		666A59392F8621B200DE989E /* RealityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealityKit.framework; path = System/Library/Frameworks/RealityKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				666A593A2F8621B200DE989E /* RealityKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,6 +39,7 @@
 			isa = PBXGroup;
 			children = (
 				666A591F2F86202C00DE989E /* ARKitPoseStreamer */,
+				666A59382F8621B200DE989E /* Frameworks */,
 				666A591E2F86202C00DE989E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +50,14 @@
 				666A591D2F86202C00DE989E /* ARKitPoseStreamer.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		666A59382F8621B200DE989E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				666A59392F8621B200DE989E /* RealityKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -82,6 +97,7 @@
 				TargetAttributes = {
 					666A591C2F86202C00DE989E = {
 						CreatedOnToolsVersion = 26.4;
+						LastSwiftMigration = 2640;
 					};
 				};
 			};
@@ -251,11 +267,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6H64D652YF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSCameraUsageDescription = "ARKitPoseStreamer 需要相机权限来运行 ARKit 追踪手部空间位置";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ARKitPoseStreamer 需要局域网访问权限来将手部位姿数据通过 UDP 发送到电脑";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -272,6 +292,8 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "ARKitPoseStreamer/ARKitPoseStreamer-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -283,11 +305,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6H64D652YF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSCameraUsageDescription = "ARKitPoseStreamer 需要相机权限来运行 ARKit 追踪手部空间位置";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ARKitPoseStreamer 需要局域网访问权限来将手部位姿数据通过 UDP 发送到电脑";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -304,6 +330,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "ARKitPoseStreamer/ARKitPoseStreamer-Bridging-Header.h";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

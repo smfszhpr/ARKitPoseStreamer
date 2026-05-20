@@ -1,0 +1,66 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'ARKitPoseStreamer/**'
+      - 'ARKitPoseStreamer.xcodeproj/**'
+      - '.github/workflows/build-ipa.yml'
+
+jobs:
+  build:
+    runs-on: macos-latest   # 当前对应 macOS 14 + Xcode 16，含 iOS 18 SDK
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode / SDK info
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks | grep -i iphoneos || true
+
+      - name: Build .app (unsigned)
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ARKitPoseStreamer.xcodeproj \
+            -scheme ARKitPoseStreamer \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            ONLY_ACTIVE_ARCH=NO \
+            | xcpretty || true
+          # xcpretty 可能没装，失败也忽略；上面 set -o pipefail 已经能感知 xcodebuild 真正退出码
+
+      - name: Package into IPA
+        run: |
+          set -euo pipefail
+          APP_PATH=$(find build -name "ARKitPoseStreamer.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: ARKitPoseStreamer.app not found under build/"
+            find build -name "*.app" -type d
+            exit 1
+          fi
+          echo "Found .app at: $APP_PATH"
+          rm -rf Payload ARKitPoseStreamer-unsigned.ipa
+          mkdir Payload
+          cp -R "$APP_PATH" Payload/
+          zip -qr ARKitPoseStreamer-unsigned.ipa Payload
+          ls -lh ARKitPoseStreamer-unsigned.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARKitPoseStreamer-unsigned-ipa
+          path: ARKitPoseStreamer-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30

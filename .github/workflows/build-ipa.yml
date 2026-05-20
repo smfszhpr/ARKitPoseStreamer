@@ -11,43 +11,69 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest   # 当前对应 macOS 14 + Xcode 16，含 iOS 18 SDK
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show Xcode / SDK info
+      - name: Diagnostics — Xcode / SDK / schemes / targets
         run: |
+          echo "=== Xcode version ==="
           xcodebuild -version
+          echo
+          echo "=== Available iOS SDKs ==="
           xcodebuild -showsdks | grep -i iphoneos || true
+          echo
+          echo "=== Project info (schemes & targets) ==="
+          xcodebuild -list -project ARKitPoseStreamer.xcodeproj
+          echo
+          echo "=== Shared schemes on disk ==="
+          ls -la ARKitPoseStreamer.xcodeproj/xcshareddata/xcschemes/ 2>&1 || true
 
       - name: Build .app (unsigned)
         run: |
           set -euo pipefail
-          xcodebuild \
-            -project ARKitPoseStreamer.xcodeproj \
-            -scheme ARKitPoseStreamer \
-            -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath build \
-            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM="" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            ONLY_ACTIVE_ARCH=NO \
-            | xcpretty || true
-          # xcpretty 可能没装，失败也忽略；上面 set -o pipefail 已经能感知 xcodebuild 真正退出码
+
+          COMMON=(
+            -project ARKitPoseStreamer.xcodeproj
+            -configuration Release
+            -sdk iphoneos
+            -derivedDataPath build
+            IPHONEOS_DEPLOYMENT_TARGET=17.0
+            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGN_IDENTITY=""
+            CODE_SIGN_ENTITLEMENTS=""
+            DEVELOPMENT_TEAM=""
+            PROVISIONING_PROFILE_SPECIFIER=""
+            ONLY_ACTIVE_ARCH=NO
+          )
+
+          # Prefer -scheme when a shared scheme is exposed; otherwise fall back to -target.
+          SHARED_SCHEMES=$(xcodebuild -list -project ARKitPoseStreamer.xcodeproj \
+                            | awk '/Schemes:/{flag=1;next} /^$/{flag=0} flag' \
+                            | sed 's/^[[:space:]]*//')
+          echo "Schemes detected: [$SHARED_SCHEMES]"
+
+          if echo "$SHARED_SCHEMES" | grep -qx 'ARKitPoseStreamer'; then
+            echo ">>> building with -scheme ARKitPoseStreamer"
+            xcodebuild "${COMMON[@]}" -scheme ARKitPoseStreamer build
+          else
+            echo ">>> no shared scheme found, falling back to -target ARKitPoseStreamer"
+            xcodebuild "${COMMON[@]}" -target ARKitPoseStreamer build
+          fi
 
       - name: Package into IPA
         run: |
           set -euo pipefail
+          echo "=== Searching for .app under build/ ==="
+          find build -maxdepth 8 -name "*.app" -type d | sort
           APP_PATH=$(find build -name "ARKitPoseStreamer.app" -type d | head -n 1)
           if [ -z "$APP_PATH" ]; then
-            echo "ERROR: ARKitPoseStreamer.app not found under build/"
-            find build -name "*.app" -type d
+            echo "ERROR: ARKitPoseStreamer.app not found"
+            echo "=== top of build tree ==="
+            find build -maxdepth 5 -type d | head -n 40
             exit 1
           fi
           echo "Found .app at: $APP_PATH"
